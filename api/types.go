@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"plate_microservice/db"
 
-	auth "plate_microservice/middleware"
+	kclk "plate_microservice/keycloack"
 )
 
 type ApiError struct {
@@ -14,7 +14,12 @@ type ApiError struct {
 type apiFunc func(http.ResponseWriter, *http.Request) error
 
 type APIServer struct {
-	listenAddr     string
-	store          db.Storage
-	authMiddleware auth.AuthMiddleware
+	listenAddr string
+	store      db.Storage
+	kclk       kclk.Keycloak
+}
+
+type PageData struct {
+	Plate   string
+	Allowed bool
 }

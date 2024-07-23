@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Entrada de Vehículos</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container-body {
+            margin: 0 auto;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap:40px;
+        }
+
+        nav {
+            background-color: #2c3e50;
+            color: white;
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 40px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        body>.container>form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #vehicleDetails {
+            height: fit-content;
+            width: max-content;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #vehicleDetails h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        #vehicleDetails ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #vehicleDetails li {
+            margin-bottom: 10px;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .availability {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .available {
+            background-color: #2ecc71;
+            color: #fff;
+        }
+
+        .not-available {
+            background-color: #e74c3c;
+            color: #fff;
+        }
+
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="container">
+            <h2>Sistema de Control</h2>
+            <form action="/logout" method="post">
+                <button type="submit" class="logout-btn">Cerrar Sesión</button>
+            </form>
+        </div>
+    </nav>
+
+    <div>
+        <h1>Control de Entrada de Vehículos</h1>
+
+        <div class="container-body">
+            <form id="plateForm">
+                <label for="plateNumber">Ingrese la placa:</label>
+                <input type="text" id="plateNumber" name="plateNumber" required placeholder="Ej: ABC123">
+                <button type="submit">Consultar placa</button>
+            </form>
+
+            <div id="vehicleDetails"></div>
+        </div>
+
+    </div>
+
+    <script>
+        document.getElementById('plateForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const plateNumber = document.getElementById('plateNumber').value;
+
+            fetch(`/vehicle?plate=${plateNumber}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log({ data })
+                    const vehicleDetails = document.getElementById('vehicleDetails');
+                    if (data.error) {
+                        vehicleDetails.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                    } else {
+                        const availabilityClass = data.isAvailable ? 'available' : 'not-available';
+                        const availabilityText = data.isAvailable ? 'PUEDE INGRESAR' : 'NO PUEDE INGRESAR';
+                        vehicleDetails.innerHTML = `
+                            <h2>Información del vehículo con placa: ${data.plateNumber}</h2>
+                            <div class="availability ${availabilityClass}">${availabilityText}</div>
+                            <ul>
+                                <li><strong>ID:</strong> ${data.id}</li>
+                                <li><strong>Placa:</strong> ${data.plateNumber}</li>
+                                <li><strong>Marca:</strong> ${data.brand}</li>
+                                <li><strong>Año Modelo:</strong> ${data.model}</li>
+                                <li><strong>Color:</strong> ${data.color}</li>
+                            </ul>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('vehicleDetails').innerHTML = '<p class="error">Ocurrió un error al obtener los detalles del vehículo.</p>';
+                });
+        });
+    </script>
+</body>
+
+</html>

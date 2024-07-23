@@ -1,36 +1,18 @@
 package main
 
 import (
-	"context"
 	"log"
-	"os"
 	"plate_microservice/api"
 	db "plate_microservice/db/mongodb"
-	"plate_microservice/middleware"
-
-	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/joho/godotenv"
+	kclk "plate_microservice/keycloack"
 )
 
-var authMiddleware *middleware.AuthMiddleware
-
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
-
-	url_realm := os.Getenv("KEYCLOAK_URL_REALM")
-	client_id := os.Getenv("KEYCLOAK_CLIENT_ID")
-	ctx := context.Background()
-	provider, err := oidc.NewProvider(ctx, url_realm)
-	if err != nil {
-		panic(err)
-	}
-
-	authMiddleware = middleware.NewAuthMiddleware(provider, client_id)
-}
-
 func main() {
+	kclk := kclk.NewKeycloak()
+	if kclk == nil {
+		log.Fatal("No está creando el objeto de Keycloak")
+	}
+
 	store, err := db.NewMongoStore()
 	if err != nil {
 		log.Fatal(err)
@@ -41,6 +23,6 @@ func main() {
 	// }
 
 	//fmt.Printf("%+v\n", store)
-	server := api.NewAPIServer(":3000", store, *authMiddleware)
+	server := api.NewAPIServer(":3000", store, *kclk)
 	server.Run()
 }
